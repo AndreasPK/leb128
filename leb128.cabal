@@ -1,0 +1,47 @@
+cabal-version:       2.0
+
+name:                leb128
+version:             0.1.0.0
+synopsis:            LEB128 encoding for Haskell
+description:         Encode and decode integral numbers to and from lists of bytes using LEB128.
+homepage:            https://github.com/AndreasPK/leb128
+-- bug-reports:
+license:             BSD3
+license-file:        LICENSE
+author:              Andreas Klebinger
+maintainer:          klebinger.andreas@gmx.at
+-- copyright:
+category:            Codec
+build-type:          Simple
+extra-source-files:  CHANGELOG.md
+
+library
+  exposed-modules:
+    Data.LEB.List
+  build-depends:
+      base ^>=4.12.0.0
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+
+test-suite leb128-test
+  default-language:    Haskell2010
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             TestLEB.hs
+  build-depends:
+      base ^>=4.12.0.0
+    , leb128
+    , QuickCheck >= 2.13 && < 2.14
+    , test-framework >= 0.8 && < 0.9
+    , test-framework-quickcheck2 >= 0.3 && < 0.4
+
+benchmark leb128-bench
+  default-language:    Haskell2010
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      bench
+  main-is:             Bench.hs
+  build-depends:
+      base ^>=4.12.0.0
+    , leb128
+    , criterion >= 1.5 && < 1.6
+
