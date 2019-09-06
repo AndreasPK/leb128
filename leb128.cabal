@@ -4,7 +4,8 @@ name:                leb128
 version:             0.1.0.0
 synopsis:            LEB128 encoding for Haskell
 description:         Encode and decode integral numbers to and from lists of bytes using LEB128.
-homepage:            https://github.com/AndreasPK/leb128
+homepage:            https://github.com/AndreasPK/leb128/issues
+
 -- bug-reports:
 license:             BSD3
 license-file:        LICENSE
@@ -14,6 +15,10 @@ maintainer:          klebinger.andreas@gmx.at
 category:            Codec
 build-type:          Simple
 extra-source-files:  CHANGELOG.md
+
+source-repository head
+  type:     git
+  location: https://github.com/AndreasPK/leb128
 
 library
   exposed-modules:
