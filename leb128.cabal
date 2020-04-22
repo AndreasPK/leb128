@@ -1,4 +1,4 @@
-cabal-version:       2.0
+cabal-version:       >= 1.22
 
 name:                leb128
 version:             0.1.0.0
@@ -20,11 +20,16 @@ source-repository head
   type:     git
   location: https://github.com/AndreasPK/leb128
 
+Flag cereal
+  Description: Support cereal based decoding.
+  Default:     False
+
 library
   exposed-modules:
     Codec.LEB128.List
     Codec.LEB128.Generic
     Codec.LEB128.BS
+    Codec.LEB128
   build-depends:
       base >= 4.8 && < 4.15
     , bytestring >= 0.10.6 && < 0.10.11
@@ -36,6 +41,10 @@ library
   -- ghc-options: -ddump-stg-final -ddump-simpl -ddump-to-file
   --              -dno-typeable-binds -O
   --              -ddump-ds
+  if flag(cereal)
+    exposed-modules:
+      Codec.LEB128.Cereal
+    build-depends: cereal
 
 test-suite leb128-test
   default-language:    Haskell2010

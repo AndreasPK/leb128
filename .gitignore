@@ -3,3 +3,4 @@ dist/*
 .stack-work/*
 .vscode/*
 cabal.project.local
+stack.yaml.lock

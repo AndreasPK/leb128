@@ -1,10 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE GeneralisedNewtypeDeriving #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE InstanceSigs #-}
 
 {- | Encode numbers to and from variable length byte lists
      using the (S)LEB128 encoding.
@@ -56,12 +52,14 @@ getByte = do
     put $! bs'
     return byte
 
+{-# INLINABLE getULEB128 #-}
 -- | Decode a value in unsigned LEB128 encoding and return remaining bytes.
 getULEB128 :: (Integral a, Bits a) => BS.ByteString -> (a,BS.ByteString)
 getULEB128 bytes = runState
                     ((inline G.decodeLEB128) getByte)
                     bytes
 
+{-# INLINABLE getSLEB128 #-}
 -- | Decode a value in (signed) SLEB128 encoding and return remaining bytes.
 getSLEB128 :: (Integral a, Bits a) => BS.ByteString -> (a,BS.ByteString)
 getSLEB128 bytes = runState
