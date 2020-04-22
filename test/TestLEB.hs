@@ -12,8 +12,9 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 import Test.QuickCheck
 import Test.QuickCheck.All
 
-import Data.List
-import Data.LEB.List
+import Codec.LEB128.List
+import Codec.LEB128.Generic
+
 import Data.Int
 import Data.Word
 
@@ -28,7 +29,7 @@ mainWithOpts = do
 
   -- We update the empty TestOptions with our desired values.
   let my_test_opts = empty_test_opts {
-    topt_maximum_generated_tests = Just 2000
+    topt_maximum_generated_tests = Just 5000
   }
 
   -- Now we create an empty RunnerOptions in the same way, and add
@@ -43,7 +44,9 @@ mainWithOpts = do
 tests = [
         testGroup "Roundtrips" [
                 testProperty "unsigned_w32" prop_roundTripUW32,
-                testProperty "signed_i32" prop_roundTripSI32
+                testProperty "unsigned_i16" prop_roundTripUW16,
+                testProperty "signed_i32" prop_roundTripSI32,
+                testProperty "signed_i16" prop_roundTripSI16
             ]
         -- testGroup "Sorting Group 2" [
         --         testGroup "Nested Group 1" [
@@ -57,14 +60,27 @@ tests = [
         --     ]
     ]
 
-
 prop_roundTripUW32 :: Word32 -> Bool
 prop_roundTripUW32 w =
-  w == getULEB128 (putULEB128 w)
+  w == fst (getULEB128 (putULEB128 w))
+
+prop_roundTripUW16 :: Word16 -> Bool
+prop_roundTripUW16 w =
+  w == fst ( getULEB128 (putULEB128 w))
 
 prop_roundTripSI32 :: Int32 -> Bool
 prop_roundTripSI32 w =
-  w  == getSLEB128 (putSLEB128 w)
+  w  == fst ( getSLEB128 (putSLEB128 w))
+
+prop_roundTripSI16 :: Int16 -> Bool
+prop_roundTripSI16 w =
+  w  == fst (getSLEB128 (putSLEB128 w))
+
+prop_roundTripBytes :: Bool
+prop_roundTripBytes =
+    let bytes = [201,202,203,1]
+    in bytes == putSLEB128 (fst . getSLEB128 $ bytes :: Int)
+
 
 
 -- --------------------------

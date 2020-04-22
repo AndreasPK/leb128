@@ -2,8 +2,8 @@ cabal-version:       2.0
 
 name:                leb128
 version:             0.1.0.0
-synopsis:            LEB128 encoding for Haskell
-description:         Encode and decode integral numbers to and from lists of bytes using LEB128.
+synopsis:            LEB128 encoding logic for and in Haskell
+description:         Encode and decode integral numbers to and from sequences of bytes using LEB128.
 homepage:            https://github.com/AndreasPK/leb128/issues
 
 -- bug-reports:
@@ -24,23 +24,29 @@ library
   exposed-modules:
     Codec.LEB128.List
     Codec.LEB128.Generic
-    Codec.LEB128.Cereal
+    Codec.LEB128.BS
   build-depends:
-      base >= 4.8 && < 5
+      base >= 4.8 && < 4.15
     , bytestring
     , ghc-prim
+    , transformers
   build-depends:       bytestring, ghc-prim
   hs-source-dirs:      src
   default-language:    Haskell2010
-
+  -- ghc-options: -ddump-stg-final -ddump-simpl -ddump-to-file
+  --              -dno-typeable-binds -O
+  --              -ddump-ds
 
 test-suite leb128-test
   default-language:    Haskell2010
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
-  main-is:             TestLEB.hs
+  main-is:
+      TestLEB.hs
+  other-modules:
+
   build-depends:
-      base >= 4.8 && < 4.14
+      base
     , leb128
     , QuickCheck >= 2.13 && < 2.14
     , test-framework >= 0.8 && < 0.9
@@ -52,7 +58,15 @@ benchmark leb128-bench
   hs-source-dirs:      bench
   main-is:             Bench.hs
   build-depends:
-      base ^>=4.12.0.0
+      base
     , leb128
     , criterion >= 1.5 && < 1.6
+    , bytestring
+    , deepseq
+
+  -- ghc-options:
+  --     -fproc-alignment=64
+  --     -ddump-stg-final -ddump-simpl -ddump-to-file
+  --     -fforce-recomp -dno-typeable-binds -O
+  --     -ddump-ds -dno-suppress-stg-exts
 

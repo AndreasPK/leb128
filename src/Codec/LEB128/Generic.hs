@@ -1,6 +1,17 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE BangPatterns #-}
 
+{- | Encode numbers to and from a sequence of bytes
+     using the (S)LEB128 encoding.
+
+     This module provides a generic interface over the encoding
+     and decoding algorithm. It can be instantiated to a wide
+     variate of types.
+
+     Instantiations based on bytestring and lists are provided in the
+     "Codec.LEB128.List" and "Codec.LEB128.BS" modules.
+-}
+
 module Codec.LEB128.Generic
   (
     -- * Generic encoding functions
@@ -19,12 +30,30 @@ import Prelude hiding ((<>))
 
 import GHC.Magic
 
--- | LEB128-encode a unsigned number into a sequence of bytes.
--- Undefined for negative numbers.
+-- | LEB128-encode a unsigned value into a sequence of bytes.
+--
+-- For example to encode a integer into a list of words you might use.
+--
+-- > encodeLEB128 pure :: Integer -> [Word8]
+--
+-- To do the same using a serialization library like bytestrings builder:
+--
+-- > encodeLEB128 (B.word8)
+--
+-- For performance reasons it can be important to make sure @encodeLEB128@
+-- is sufficiently specialized. One way to achieve this is to force inlining
+-- using the @inline@ function from GHC.Magic (defined in the ghc-prim package).
+-- For an efficient example generic over the value type this gives us for lists:
+--
+-- @
+--    putULEB128 :: (Integral a, Bits a) => a -> [Word8]
+--    putULEB128 = (inline G.encodeLEB128) pure
+-- @
+--
+-- Results are undefined for negative numbers.
 {-# INLINE encodeLEB128 #-}
 encodeLEB128 :: forall a m. (Monoid m, Integral a, Bits a) => (Word8 -> m) -> a -> m
 encodeLEB128 !putWord8 x = go x
-  -- | x < 0 = error "Can't encode negative numbers in unsigned LEB format."
   where
     go !i
       | i <= 127
@@ -34,7 +63,9 @@ encodeLEB128 !putWord8 x = go x
         let !byte = (setBit (fromIntegral i) 7)
         in (inline putWord8) byte <> go (i `unsafeShiftR` 7)
 
--- | SLEB128-encodes an singed number into a sequence of bytes.
+-- | SLEB128-encodes an singed value into a sequence of bytes.
+--
+-- Works the same as @encodeLEB128@ but supports negative values.
 {-# INLINE encodeSLEB128 #-}
 encodeSLEB128 :: forall a m. (Monoid m, Integral a, Bits a) => (Word8 -> m) -> a -> m
 encodeSLEB128 putWord8 = go
@@ -44,7 +75,7 @@ encodeSLEB128 putWord8 = go
         let !val' = val `unsafeShiftR` 7
         let !signBit = testBit byte 6
         let !done =
-                -- Unsigned value, val' == 0 and and last value can
+                -- Unsigned value, val' == 0 and last value can
                 -- be discriminated from a negative number.
                 (val' == 0 && not signBit) ||
                 -- Signed value,
@@ -52,7 +83,14 @@ encodeSLEB128 putWord8 = go
         let !byte' = if done then byte else setBit byte 7
         putWord8 byte' <> if done then mempty else go val'
 
--- | LEB128-decodes a natural number via @cereal@
+-- | LEB128-decodes a unsigned value given a monadic way to request bytes.
+--
+-- For example a implementation over a state monad might look like:
+--
+-- > execState . decodeLEB128 getByte
+--
+-- This pattern is used by the bytestring based decoder in this package.
+-- See there for a complete example.
 {-# INLINE decodeLEB128 #-}
 decodeLEB128 :: forall a m. (Monad m, Integral a, Bits a) => m Word8 -> m a
 decodeLEB128 getWord8 = go 0 0
@@ -68,7 +106,9 @@ decodeLEB128 getWord8 = go 0 0
             then go shift' val
             else return $! val
 
--- | SLEB128-decodes an integer via @cereal@
+-- | SLEB128-decodes a unsigned number given a monadic way to request bytes.
+--
+-- Same as decodeLEB128 but for the signed encoding.
 {-# INLINE decodeSLEB128 #-}
 decodeSLEB128 :: forall a m. (Monad m, Integral a, Bits a) => m Word8 -> m a
 decodeSLEB128 getWord8 = go 0 0
