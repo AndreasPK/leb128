@@ -27,7 +27,7 @@ library
     Codec.LEB128.BS
   build-depends:
       base >= 4.8 && < 4.15
-    , bytestring
+    , bytestring >= 0.10.6 && < 0.10.11
     , ghc-prim
     , transformers
   build-depends:       bytestring, ghc-prim
@@ -48,7 +48,7 @@ test-suite leb128-test
   build-depends:
       base
     , leb128
-    , QuickCheck >= 2.13 && < 2.14
+    , QuickCheck >= 2.13 && < 2.15
     , test-framework >= 0.8 && < 0.9
     , test-framework-quickcheck2 >= 0.3 && < 0.4
 
