@@ -14,7 +14,7 @@ maintainer:          klebinger.andreas@gmx.at
 -- copyright:
 category:            Codec
 build-type:          Simple
-extra-source-files:  CHANGELOG.md
+extra-source-files:  CHANGELOG.md, README.md
 
 source-repository head
   type:     git
@@ -28,23 +28,20 @@ library
   exposed-modules:
     Codec.LEB128.List
     Codec.LEB128.Generic
-    Codec.LEB128.BS
+    Codec.LEB128.Internal.BS
     Codec.LEB128
+    Codec.LEB128.Constraints
   build-depends:
       base >= 4.8 && < 4.15
     , bytestring >= 0.10.6 && < 0.10.11
     , ghc-prim
     , transformers
-  build-depends:       bytestring, ghc-prim
   hs-source-dirs:      src
   default-language:    Haskell2010
-  ghc-options: -ddump-stg-final -ddump-simpl -ddump-to-file
-               -dno-typeable-binds -fforce-recomp
-               -ddump-ds
-  if flag(cereal)
-    exposed-modules:
-      Codec.LEB128.Cereal
-    build-depends: cereal
+  ghc-options: -Wall
+  -- ghc-options: -ddump-stg-final -ddump-simpl -ddump-to-file
+              --  -dno-typeable-binds
+
 
 test-suite leb128-test
   default-language:    Haskell2010
@@ -53,13 +50,15 @@ test-suite leb128-test
   main-is:
       TestLEB.hs
   other-modules:
+      LEB128.Props
 
   build-depends:
       base
-    , leb128
+    , leb128 -any
     , QuickCheck >= 2.13 && < 2.15
     , test-framework >= 0.8 && < 0.9
     , test-framework-quickcheck2 >= 0.3 && < 0.4
+    , bytestring
 
 benchmark leb128-bench
   default-language:    Haskell2010
@@ -68,14 +67,7 @@ benchmark leb128-bench
   main-is:             Bench.hs
   build-depends:
       base
-    , leb128
+    , leb128 -any
     , criterion >= 1.5 && < 1.6
     , bytestring
     , deepseq
-
-  -- ghc-options:
-  --     -fproc-alignment=64
-  --     -ddump-stg-final -ddump-simpl -ddump-to-file
-  --     -fforce-recomp -dno-typeable-binds -O
-  --     -ddump-ds -dno-suppress-stg-exts
-

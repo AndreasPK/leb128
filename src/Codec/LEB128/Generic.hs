@@ -1,15 +1,25 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE BangPatterns #-}
 
-{- | Encode numbers to and from a sequence of bytes
-     using the (S)LEB128 encoding.
+
+{- |
+    Module      : Codec.LEB128.Generic
+    Description : Encode values via (S)LEB128
+    Copyright   : (c) Andreas Klebinger 2020
+    License     : BSD3
+    Maintainer  : Andreas Klebinger
+    Portability : GHC >= 7.10
 
      This module provides a generic interface over the encoding
      and decoding algorithm. It can be instantiated to a wide
      variate of types.
 
      Instantiations based on bytestring and lists are provided in the
-     "Codec.LEB128.List" and "Codec.LEB128.BS" modules.
+     "Codec.LEB128.List" and "Codec.LEB128.Internal.BS" modules.
+
+     Size checks for inputs or output types are not performed by default.
+     However they can be included in the put/get functions if desired.
+
 -}
 
 module Codec.LEB128.Generic
@@ -22,13 +32,15 @@ module Codec.LEB128.Generic
   , decodeSLEB128)
 where
 
-import Control.Applicative
-import Data.Bits
+-- import Control.Applicative
+import Data.Bits ((.|.), Bits, unsafeShiftR, unsafeShiftL,
+                  testBit, clearBit, setBit, bit)
 import Data.Word
 import Data.Monoid ((<>))
 import Prelude hiding ((<>))
-
 import GHC.Magic
+
+import Codec.LEB128.Constraints
 
 -- | LEB128-encode a unsigned value into a sequence of bytes.
 --
@@ -46,14 +58,14 @@ import GHC.Magic
 -- For an efficient example generic over the value type this gives us for lists:
 --
 -- @
---    putULEB128 :: (Integral a, Bits a) => a -> [Word8]
---    putULEB128 = (inline G.encodeLEB128) pure
+--    toULEB128 :: (Integral a, Bits a) => a -> [Word8]
+--    toULEB128 = (inline G.encodeLEB128) pure
 -- @
 --
 -- Results are undefined for negative numbers.
 {-# INLINE encodeLEB128 #-}
-encodeLEB128 :: forall a m. (Monoid m, Integral a, Bits a) => (Word8 -> m) -> a -> m
-encodeLEB128 !putWord8 x = go x
+encodeLEB128 :: forall a m. (Monoid m, LEB128 a) => (Word8 -> m) -> a -> m
+encodeLEB128 !putWord8 = go
   where
     go !i
       | i <= 127
@@ -67,7 +79,7 @@ encodeLEB128 !putWord8 x = go x
 --
 -- Works the same as @encodeLEB128@ but supports negative values.
 {-# INLINE encodeSLEB128 #-}
-encodeSLEB128 :: forall a m. (Monoid m, Integral a, Bits a) => (Word8 -> m) -> a -> m
+encodeSLEB128 :: forall a m. (Monoid m, SLEB128 a) => (Word8 -> m) -> a -> m
 encodeSLEB128 putWord8 = go
   where
     go val = do
@@ -92,7 +104,7 @@ encodeSLEB128 putWord8 = go
 -- This pattern is used by the bytestring based decoder in this package.
 -- See there for a complete example.
 {-# INLINE decodeLEB128 #-}
-decodeLEB128 :: forall a m. (Monad m, Integral a, Bits a) => m Word8 -> m a
+decodeLEB128 :: forall a m. (Monad m, LEB128 a) => m Word8 -> m a
 decodeLEB128 getWord8 = go 0 0
   where
     go :: Int -> a -> m a
@@ -110,7 +122,7 @@ decodeLEB128 getWord8 = go 0 0
 --
 -- Same as decodeLEB128 but for the signed encoding.
 {-# INLINE decodeSLEB128 #-}
-decodeSLEB128 :: forall a m. (Monad m, Integral a, Bits a) => m Word8 -> m a
+decodeSLEB128 :: forall a m. (Monad m, SLEB128 a) => m Word8 -> m a
 decodeSLEB128 getWord8 = go 0 0
   where
     go :: Int -> a -> m a

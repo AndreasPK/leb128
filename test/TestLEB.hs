@@ -12,12 +12,14 @@ import Test.Framework.Providers.QuickCheck2 (testProperty)
 import Test.QuickCheck
 import Test.QuickCheck.All
 
-import Codec.LEB128.List
-import Codec.LEB128.Generic
+import Codec.LEB128.Constraints
+import Codec.LEB128.List as L
+import Codec.LEB128.Generic as G
 
 import Data.Int
 import Data.Word
 
+import LEB128.Props
 
 main = defaultMain tests
 
@@ -46,7 +48,12 @@ tests = [
                 testProperty "unsigned_w32" prop_roundTripUW32,
                 testProperty "unsigned_i16" prop_roundTripUW16,
                 testProperty "signed_i32" prop_roundTripSI32,
-                testProperty "signed_i16" prop_roundTripSI16
+                testProperty "signed_i16" prop_roundTripSI16,
+                testProperty "uleb128/=leb128" (expectFailure prop_uleb_eq_leb)
+            ],
+        testGroup "ByteString"
+            [ testProperty "rountrip_1" prop_roundtrip_bs
+            , testProperty "rountrip_2" prop_roundtrip_bs_2
             ]
         -- testGroup "Sorting Group 2" [
         --         testGroup "Nested Group 1" [
@@ -62,24 +69,29 @@ tests = [
 
 prop_roundTripUW32 :: Word32 -> Bool
 prop_roundTripUW32 w =
-  w == fst (getULEB128 (putULEB128 w))
+  w == fst (L.fromULEB128 (L.toULEB128 w))
 
 prop_roundTripUW16 :: Word16 -> Bool
 prop_roundTripUW16 w =
-  w == fst ( getULEB128 (putULEB128 w))
+  w == fst ( L.fromULEB128 (L.toULEB128 w))
 
 prop_roundTripSI32 :: Int32 -> Bool
 prop_roundTripSI32 w =
-  w  == fst ( getSLEB128 (putSLEB128 w))
+  w  == fst ( L.fromSLEB128 (L.toSLEB128 w))
 
 prop_roundTripSI16 :: Int16 -> Bool
 prop_roundTripSI16 w =
-  w  == fst (getSLEB128 (putSLEB128 w))
+  w  == fst (fromSLEB128 (toSLEB128 w))
 
 prop_roundTripBytes :: Bool
 prop_roundTripBytes =
     let bytes = [201,202,203,1]
-    in bytes == putSLEB128 (fst . getSLEB128 $ bytes :: Int)
+    in bytes == toSLEB128 (fst . fromSLEB128 $ bytes :: Int)
+
+-- This is supposed to fail!
+prop_uleb_eq_leb :: Int16 -> Bool
+prop_uleb_eq_leb x = ((toSLEB128 $ UnsafeAnyLEB128 x) == toULEB128 (UnsafeAnyLEB128 x))
+
 
 
 
