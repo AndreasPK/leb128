@@ -28,8 +28,6 @@ module Codec.LEB128
     )
 where
 
-import Data.Bits
-
 import Numeric.Natural
 import Data.Word
 import Data.Int

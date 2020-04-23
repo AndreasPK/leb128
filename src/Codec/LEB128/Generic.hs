@@ -33,7 +33,7 @@ module Codec.LEB128.Generic
 where
 
 -- import Control.Applicative
-import Data.Bits ((.|.), Bits, unsafeShiftR, unsafeShiftL,
+import Data.Bits ((.|.), unsafeShiftR, unsafeShiftL,
                   testBit, clearBit, setBit, bit)
 import Data.Word
 import Data.Monoid ((<>))

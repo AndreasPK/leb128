@@ -26,7 +26,6 @@ module Codec.LEB128.List
   )
 where
 
-import Data.Bits
 import Data.Word
 import GHC.Magic
 

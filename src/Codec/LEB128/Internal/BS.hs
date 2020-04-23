@@ -25,7 +25,6 @@ module Codec.LEB128.Internal.BS
   )
 where
 
-import Data.Bits
 import Data.Word (Word8)
 import Data.Maybe
 import GHC.Magic
