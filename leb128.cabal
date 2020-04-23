@@ -20,10 +20,6 @@ source-repository head
   type:     git
   location: https://github.com/AndreasPK/leb128
 
-Flag cereal
-  Description: Support cereal based decoding.
-  Default:     False
-
 library
   exposed-modules:
     Codec.LEB128.List
