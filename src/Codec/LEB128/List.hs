@@ -28,6 +28,8 @@ import Data.Int
 import Data.List
 import GHC.Magic
 
+import Control.Monad.Trans.State.Strict
+
 import Codec.LEB128.Generic as G
 
 -- | Encode a unsigned value in LEB128.
@@ -40,36 +42,22 @@ putULEB128 = (inline G.encodeLEB128) pure
 putSLEB128 :: (Integral a, Bits a) => a -> [Word8]
 putSLEB128 = (inline G.encodeSLEB128) pure
 
-newtype ByteProvider a = BP { runBP :: [Word8] -> (a,[Word8]) }
-    deriving (Functor)
-
-instance Applicative ByteProvider where
-  pure x = BP $ \bs -> (x,bs)
-  BP wf <*> BP wa = BP $ \wds ->
-    case wf wds of
-        (f, wds') -> case wa wds' of
-            (a,wds'') -> (f a, wds'')
-
-instance Monad ByteProvider where
-  return = pure
-  (>>=) :: ByteProvider a -> (a -> ByteProvider b) -> ByteProvider b
-  BP wa >>= f =
-    BP $ \wds ->
-      case wa wds of
-        (a', wds') -> case f a'
-          of BP r -> r wds'
+type ByteProvider a = State [Word8] a
 
 {-# INLINE getByte #-}
 getByte :: ByteProvider Word8
-getByte = BP $ \wds -> split wds
-  where
-    split (x:xs) = (x,xs)
-    split [] = error "ByteProvider: Not enough bytes"
+getByte = do
+  wds <- get
+  case wds of
+    [] -> error "decode LEB128: Not enough bytes"
+    (x:xs) -> put xs >> return x
 
+{-# INLINEABLE getULEB128 #-}
 -- | Decode a unsigned LEB128 encoded value from a list of bytes.
 getULEB128 :: (Integral a, Bits a) => [Word8] -> (a,[Word8])
-getULEB128 wds = (runBP ((inline G.decodeLEB128) getByte)) wds
+getULEB128 = runState ((inline G.decodeLEB128) getByte)
 
+{-# INLINEABLE getSLEB128 #-}
 -- | Decode a signed __S__LEB128 encoded value from a list of bytes.
 getSLEB128 :: (Integral a, Bits a) => [Word8] -> (a,[Word8])
-getSLEB128 wds = (runBP ((inline G.decodeSLEB128) getByte)) wds
+getSLEB128 = runState ((inline G.decodeSLEB128) getByte)

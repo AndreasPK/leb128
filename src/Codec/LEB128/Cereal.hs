@@ -91,15 +91,11 @@ fromLEB128 = G.runGet getLEB128
 fromSLEB128 :: BS.ByteString -> Either String Integer
 fromSLEB128 = G.runGet getSLEB128
 
--- class (Bits a, Integral a) => LEB128 a
-
--- instance LEB128 Int
-
 -- | LEB128-decodes a natural number via @cereal@
-getLEB128 :: G.Get Int
+getLEB128 :: G.Get Natural
 getLEB128 = G.label "LEB128" $ go 0 0
   where
-    go :: Int -> Int -> G.Get Int
+    go :: Int -> Natural -> G.Get Natural
     go !shift !w = do
         byte <- G.getWord8 <|> fail "short encoding"
         let !byteVal = fromIntegral (clearBit byte 7)
