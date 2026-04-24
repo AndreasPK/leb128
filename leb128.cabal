@@ -28,8 +28,8 @@ library
     Codec.LEB128
     Codec.LEB128.Constraints
   build-depends:
-      base >= 4.8 && < 4.15
-    , bytestring >= 0.10.6 && < 0.10.11
+      base >= 4.8 && < 4.23
+    , bytestring >= 0.10.6 && < 0.13
     , ghc-prim
     , transformers
   hs-source-dirs:      src
@@ -51,7 +51,7 @@ test-suite leb128-test
   build-depends:
       base
     , leb128 -any
-    , QuickCheck >= 2.13 && < 2.15
+    , QuickCheck >= 2.13 && < 2.19
     , test-framework >= 0.8 && < 0.9
     , test-framework-quickcheck2 >= 0.3 && < 0.4
     , bytestring
@@ -64,6 +64,6 @@ benchmark leb128-bench
   build-depends:
       base
     , leb128 -any
-    , criterion >= 1.5 && < 1.6
+    , criterion >= 1.5 && < 1.7
     , bytestring
     , deepseq
