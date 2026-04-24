@@ -16,6 +16,10 @@ category:            Codec
 build-type:          Simple
 extra-source-files:  CHANGELOG.md, README.md
 
+tested-with:
+  --
+  GHC == 9.14.1 || == 9.12.2 || == 9.10.1 || == 9.8.4 || == 9.6.7 || == 9.4.8 || == 8.10.3 || == 8.0.2
+
 source-repository head
   type:     git
   location: https://github.com/AndreasPK/leb128
